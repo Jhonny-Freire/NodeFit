@@ -1,0 +1,23 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - build/**
+    - android/**
+    - "**/*.g.dart"
+    - web/**
+  language:
+    strict-casts: true
+    strict-raw-types: true
+
+# riverpod_lint 3.x usa o sistema novo de plugins do analisador (não o custom_lint).
+plugins:
+  riverpod_lint: ^3.1.9
+
+linter:
+  rules:
+    - prefer_final_locals
+    - prefer_single_quotes
+    - unawaited_futures
+    - avoid_print
+    - require_trailing_commas
