@@ -92,4 +92,22 @@ void main() {
     expect(await db.select(db.users).get(), isEmpty);
     await db.close();
   });
+
+  // v4 → v5 acrescenta a data do próximo treino na ficha: as fichas que já
+  // existem continuam iguais e ficam sem data.
+  test('v4 → v5 preserva as fichas e deixa o próximo treino vazio', () async {
+    final schema = await verifier.schemaAt(4);
+    const t = '2026-11-18T10:00:00.000Z';
+    schema.rawDatabase.execute(
+      "INSERT INTO routines (id, name, label, sort_order, created_at, "
+      "updated_at) VALUES ('r', 'Peito/Tríceps', 'A', 0, '$t', '$t')",
+    );
+    final db = AppDatabase(schema.newConnection());
+    await verifier.migrateAndValidate(db, 5);
+    final routine = await db.select(db.routines).getSingle();
+    expect(routine.name, 'Peito/Tríceps');
+    expect(routine.label, 'A');
+    expect(routine.nextOn, isNull);
+    await db.close();
+  });
 }

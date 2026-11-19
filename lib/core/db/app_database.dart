@@ -41,7 +41,7 @@ class AppDatabase extends _$AppDatabase {
   // Ao mudar o schema: suba este número, rode
   // `dart run drift_dev make-migrations` e escreva o passo em `onUpgrade`.
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   bool _closed = false;
 
@@ -76,6 +76,11 @@ class AppDatabase extends _$AppDatabase {
       // treino existente é tocado.
       from3To4: (m, schema) async {
         await m.createTable(schema.users);
+      },
+      // v5: data do próximo treino na ficha. Coluna nova e opcional: as
+      // fichas existentes ficam sem data (nulo) e nada mais muda.
+      from4To5: (m, schema) async {
+        await m.addColumn(schema.routines, schema.routines.nextOn);
       },
     ),
     beforeOpen: (details) async {

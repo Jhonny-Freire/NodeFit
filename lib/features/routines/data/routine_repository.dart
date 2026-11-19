@@ -102,6 +102,19 @@ class RoutineRepository {
     );
   }
 
+  /// Quando esta ficha foi feita pela última vez (só treinos terminados).
+  Stream<DateTime?> watchLastDone(String routineId) {
+    final last = _db.workoutSessions.startedAt.max();
+    return (_db.selectOnly(_db.workoutSessions)
+          ..addColumns([last])
+          ..where(
+            _db.workoutSessions.routineId.equals(routineId) &
+                _db.workoutSessions.endedAt.isNotNull(),
+          ))
+        .map((r) => r.read(last))
+        .watchSingle();
+  }
+
   Stream<Routine?> watchRoutine(String id) => (_db.select(
     _db.routines,
   )..where((r) => r.id.equals(id))).watchSingleOrNull();
@@ -164,6 +177,7 @@ class RoutineRepository {
     String? label,
     String? trainer,
     String? expiresOn,
+    String? nextOn,
     String? notes,
   }) => (_db.update(_db.routines)..where((r) => r.id.equals(id))).write(
     RoutinesCompanion(
@@ -171,6 +185,7 @@ class RoutineRepository {
       label: Value(_blankToNull(label)),
       trainer: Value(_blankToNull(trainer)),
       expiresOn: Value(_blankToNull(expiresOn)),
+      nextOn: Value(_blankToNull(nextOn)),
       notes: Value(_blankToNull(notes)),
       updatedAt: Value(nowUtc()),
     ),
@@ -456,6 +471,10 @@ Stream<List<RoutineSummary>> gymRoutines(Ref ref, String gymId) =>
 @riverpod
 Stream<Routine?> routine(Ref ref, String id) =>
     ref.watch(routineRepositoryProvider).watchRoutine(id);
+
+@riverpod
+Stream<DateTime?> routineLastDone(Ref ref, String routineId) =>
+    ref.watch(routineRepositoryProvider).watchLastDone(routineId);
 
 @riverpod
 Stream<List<RoutineItemView>> routineItems(Ref ref, String routineId) =>

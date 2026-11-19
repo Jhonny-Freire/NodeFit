@@ -203,6 +203,76 @@ final class RoutineFamily extends $Family
   String toString() => r'routineProvider';
 }
 
+@ProviderFor(routineLastDone)
+final routineLastDoneProvider = RoutineLastDoneFamily._();
+
+final class RoutineLastDoneProvider
+    extends
+        $FunctionalProvider<AsyncValue<DateTime?>, DateTime?, Stream<DateTime?>>
+    with $FutureModifier<DateTime?>, $StreamProvider<DateTime?> {
+  RoutineLastDoneProvider._({
+    required RoutineLastDoneFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'routineLastDoneProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$routineLastDoneHash();
+
+  @override
+  String toString() {
+    return r'routineLastDoneProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $StreamProviderElement<DateTime?> $createElement($ProviderPointer pointer) =>
+      $StreamProviderElement(pointer);
+
+  @override
+  Stream<DateTime?> create(Ref ref) {
+    final argument = this.argument as String;
+    return routineLastDone(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is RoutineLastDoneProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$routineLastDoneHash() => r'2072639cf080636b109bab5b8f5e68ffad98b314';
+
+final class RoutineLastDoneFamily extends $Family
+    with $FunctionalFamilyOverride<Stream<DateTime?>, String> {
+  RoutineLastDoneFamily._()
+    : super(
+        retry: null,
+        name: r'routineLastDoneProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  RoutineLastDoneProvider call(String routineId) =>
+      RoutineLastDoneProvider._(argument: routineId, from: this);
+
+  @override
+  String toString() => r'routineLastDoneProvider';
+}
+
 @ProviderFor(routineItems)
 final routineItemsProvider = RoutineItemsFamily._();
 

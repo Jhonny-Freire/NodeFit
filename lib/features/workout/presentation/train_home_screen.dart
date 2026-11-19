@@ -8,6 +8,7 @@ import '../../../app/router.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/prefs/prefs_repository.dart';
+import '../../../core/domain/workout_dates.dart';
 import '../../../core/utils/plural.dart';
 import '../../../core/widgets/common.dart';
 import '../../backup/restore_flow.dart';
@@ -18,6 +19,11 @@ import '../../routines/presentation/routine_editor_screen.dart' show expiryInfo;
 import '../data/workout_repository.dart';
 import 'start_session.dart';
 import 'widgets/elapsed_text.dart';
+
+/// Ficha vencida (ou perto) ou com o próximo treino já passado.
+bool _needsAttention(RoutineSummary r) =>
+    expiryInfo(r.routine.expiresOn)?.warn == true ||
+    nextWorkoutInfo(r.routine.nextOn)?.overdue == true;
 
 /// Aba Treinar: começar (ou continuar) o treino em 1 toque.
 class TrainHomeScreen extends ConsumerWidget {
@@ -129,6 +135,7 @@ class _TrainHomeBody extends ConsumerWidget {
                 plural(next.exerciseCount, 'exercício', 'exercícios'),
                 if (next.lastDoneAt != null)
                   'última: ${DateFormat('EEE dd/MM').format(next.lastDoneAt!.toLocal())}',
+                ?nextWorkoutInfo(next.routine.nextOn)?.text,
                 ?expiryInfo(next.routine.expiresOn)?.text,
               ].join(' · '),
               style: TextStyle(color: context.colors.onSurfaceVariant),
@@ -176,16 +183,21 @@ class _TrainHomeBody extends ConsumerWidget {
                   for (final r in routines)
                     ListTile(
                       title: Text(r.title),
+                      // Linha 1: exercícios e vencimento.
+                      // Linha 2: último treino feito e próximo planejado.
                       subtitle: Text(
                         [
-                          plural(r.exerciseCount, 'exercício', 'exercícios'),
-                          if (r.lastDoneAt != null)
-                            DateFormat('EEE dd/MM')
-                                .format(r.lastDoneAt!.toLocal()),
-                          ?expiryInfo(r.routine.expiresOn)?.text,
-                        ].join(' · '),
+                          [
+                            plural(r.exerciseCount, 'exercício', 'exercícios'),
+                            ?expiryInfo(r.routine.expiresOn)?.text,
+                          ].join(' · '),
+                          [
+                            ?lastWorkoutText(r.lastDoneAt),
+                            ?nextWorkoutInfo(r.routine.nextOn)?.text,
+                          ].join(' · '),
+                        ].where((l) => l.isNotEmpty).join('\n'),
                         style: TextStyle(
-                          color: expiryInfo(r.routine.expiresOn)?.warn == true
+                          color: _needsAttention(r)
                               ? context.semantic.attention
                               : context.colors.onSurfaceVariant,
                         ),

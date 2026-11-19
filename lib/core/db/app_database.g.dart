@@ -3446,6 +3446,15 @@ class $RoutinesTable extends Routines with TableInfo<$RoutinesTable, Routine> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _nextOnMeta = const VerificationMeta('nextOn');
+  @override
+  late final GeneratedColumn<String> nextOn = GeneratedColumn<String>(
+    'next_on',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _notesMeta = const VerificationMeta('notes');
   @override
   late final GeneratedColumn<String> notes = GeneratedColumn<String>(
@@ -3510,6 +3519,7 @@ class $RoutinesTable extends Routines with TableInfo<$RoutinesTable, Routine> {
     gymId,
     trainer,
     expiresOn,
+    nextOn,
     notes,
     sortOrder,
     archivedAt,
@@ -3561,6 +3571,12 @@ class $RoutinesTable extends Routines with TableInfo<$RoutinesTable, Routine> {
       context.handle(
         _expiresOnMeta,
         expiresOn.isAcceptableOrUnknown(data['expires_on']!, _expiresOnMeta),
+      );
+    }
+    if (data.containsKey('next_on')) {
+      context.handle(
+        _nextOnMeta,
+        nextOn.isAcceptableOrUnknown(data['next_on']!, _nextOnMeta),
       );
     }
     if (data.containsKey('notes')) {
@@ -3626,6 +3642,10 @@ class $RoutinesTable extends Routines with TableInfo<$RoutinesTable, Routine> {
         DriftSqlType.string,
         data['${effectivePrefix}expires_on'],
       ),
+      nextOn: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}next_on'],
+      ),
       notes: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
@@ -3664,6 +3684,10 @@ class Routine extends DataClass implements Insertable<Routine> {
 
   /// Vencimento da ficha (AAAA-MM-DD).
   final String? expiresOn;
+
+  /// Data planejada do próximo treino com esta ficha (AAAA-MM-DD).
+  /// Pode estar no futuro (vai acontecer) ou no passado (já passou).
+  final String? nextOn;
   final String? notes;
   final int sortOrder;
   final DateTime? archivedAt;
@@ -3676,6 +3700,7 @@ class Routine extends DataClass implements Insertable<Routine> {
     this.gymId,
     this.trainer,
     this.expiresOn,
+    this.nextOn,
     this.notes,
     required this.sortOrder,
     this.archivedAt,
@@ -3698,6 +3723,9 @@ class Routine extends DataClass implements Insertable<Routine> {
     }
     if (!nullToAbsent || expiresOn != null) {
       map['expires_on'] = Variable<String>(expiresOn);
+    }
+    if (!nullToAbsent || nextOn != null) {
+      map['next_on'] = Variable<String>(nextOn);
     }
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
@@ -3727,6 +3755,9 @@ class Routine extends DataClass implements Insertable<Routine> {
       expiresOn: expiresOn == null && nullToAbsent
           ? const Value.absent()
           : Value(expiresOn),
+      nextOn: nextOn == null && nullToAbsent
+          ? const Value.absent()
+          : Value(nextOn),
       notes: notes == null && nullToAbsent
           ? const Value.absent()
           : Value(notes),
@@ -3751,6 +3782,7 @@ class Routine extends DataClass implements Insertable<Routine> {
       gymId: serializer.fromJson<String?>(json['gymId']),
       trainer: serializer.fromJson<String?>(json['trainer']),
       expiresOn: serializer.fromJson<String?>(json['expiresOn']),
+      nextOn: serializer.fromJson<String?>(json['nextOn']),
       notes: serializer.fromJson<String?>(json['notes']),
       sortOrder: serializer.fromJson<int>(json['sortOrder']),
       archivedAt: serializer.fromJson<DateTime?>(json['archivedAt']),
@@ -3768,6 +3800,7 @@ class Routine extends DataClass implements Insertable<Routine> {
       'gymId': serializer.toJson<String?>(gymId),
       'trainer': serializer.toJson<String?>(trainer),
       'expiresOn': serializer.toJson<String?>(expiresOn),
+      'nextOn': serializer.toJson<String?>(nextOn),
       'notes': serializer.toJson<String?>(notes),
       'sortOrder': serializer.toJson<int>(sortOrder),
       'archivedAt': serializer.toJson<DateTime?>(archivedAt),
@@ -3783,6 +3816,7 @@ class Routine extends DataClass implements Insertable<Routine> {
     Value<String?> gymId = const Value.absent(),
     Value<String?> trainer = const Value.absent(),
     Value<String?> expiresOn = const Value.absent(),
+    Value<String?> nextOn = const Value.absent(),
     Value<String?> notes = const Value.absent(),
     int? sortOrder,
     Value<DateTime?> archivedAt = const Value.absent(),
@@ -3795,6 +3829,7 @@ class Routine extends DataClass implements Insertable<Routine> {
     gymId: gymId.present ? gymId.value : this.gymId,
     trainer: trainer.present ? trainer.value : this.trainer,
     expiresOn: expiresOn.present ? expiresOn.value : this.expiresOn,
+    nextOn: nextOn.present ? nextOn.value : this.nextOn,
     notes: notes.present ? notes.value : this.notes,
     sortOrder: sortOrder ?? this.sortOrder,
     archivedAt: archivedAt.present ? archivedAt.value : this.archivedAt,
@@ -3809,6 +3844,7 @@ class Routine extends DataClass implements Insertable<Routine> {
       gymId: data.gymId.present ? data.gymId.value : this.gymId,
       trainer: data.trainer.present ? data.trainer.value : this.trainer,
       expiresOn: data.expiresOn.present ? data.expiresOn.value : this.expiresOn,
+      nextOn: data.nextOn.present ? data.nextOn.value : this.nextOn,
       notes: data.notes.present ? data.notes.value : this.notes,
       sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
       archivedAt: data.archivedAt.present
@@ -3828,6 +3864,7 @@ class Routine extends DataClass implements Insertable<Routine> {
           ..write('gymId: $gymId, ')
           ..write('trainer: $trainer, ')
           ..write('expiresOn: $expiresOn, ')
+          ..write('nextOn: $nextOn, ')
           ..write('notes: $notes, ')
           ..write('sortOrder: $sortOrder, ')
           ..write('archivedAt: $archivedAt, ')
@@ -3845,6 +3882,7 @@ class Routine extends DataClass implements Insertable<Routine> {
     gymId,
     trainer,
     expiresOn,
+    nextOn,
     notes,
     sortOrder,
     archivedAt,
@@ -3861,6 +3899,7 @@ class Routine extends DataClass implements Insertable<Routine> {
           other.gymId == this.gymId &&
           other.trainer == this.trainer &&
           other.expiresOn == this.expiresOn &&
+          other.nextOn == this.nextOn &&
           other.notes == this.notes &&
           other.sortOrder == this.sortOrder &&
           other.archivedAt == this.archivedAt &&
@@ -3875,6 +3914,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
   final Value<String?> gymId;
   final Value<String?> trainer;
   final Value<String?> expiresOn;
+  final Value<String?> nextOn;
   final Value<String?> notes;
   final Value<int> sortOrder;
   final Value<DateTime?> archivedAt;
@@ -3888,6 +3928,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
     this.gymId = const Value.absent(),
     this.trainer = const Value.absent(),
     this.expiresOn = const Value.absent(),
+    this.nextOn = const Value.absent(),
     this.notes = const Value.absent(),
     this.sortOrder = const Value.absent(),
     this.archivedAt = const Value.absent(),
@@ -3902,6 +3943,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
     this.gymId = const Value.absent(),
     this.trainer = const Value.absent(),
     this.expiresOn = const Value.absent(),
+    this.nextOn = const Value.absent(),
     this.notes = const Value.absent(),
     this.sortOrder = const Value.absent(),
     this.archivedAt = const Value.absent(),
@@ -3916,6 +3958,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
     Expression<String>? gymId,
     Expression<String>? trainer,
     Expression<String>? expiresOn,
+    Expression<String>? nextOn,
     Expression<String>? notes,
     Expression<int>? sortOrder,
     Expression<DateTime>? archivedAt,
@@ -3930,6 +3973,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
       if (gymId != null) 'gym_id': gymId,
       if (trainer != null) 'trainer': trainer,
       if (expiresOn != null) 'expires_on': expiresOn,
+      if (nextOn != null) 'next_on': nextOn,
       if (notes != null) 'notes': notes,
       if (sortOrder != null) 'sort_order': sortOrder,
       if (archivedAt != null) 'archived_at': archivedAt,
@@ -3946,6 +3990,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
     Value<String?>? gymId,
     Value<String?>? trainer,
     Value<String?>? expiresOn,
+    Value<String?>? nextOn,
     Value<String?>? notes,
     Value<int>? sortOrder,
     Value<DateTime?>? archivedAt,
@@ -3960,6 +4005,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
       gymId: gymId ?? this.gymId,
       trainer: trainer ?? this.trainer,
       expiresOn: expiresOn ?? this.expiresOn,
+      nextOn: nextOn ?? this.nextOn,
       notes: notes ?? this.notes,
       sortOrder: sortOrder ?? this.sortOrder,
       archivedAt: archivedAt ?? this.archivedAt,
@@ -3989,6 +4035,9 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
     }
     if (expiresOn.present) {
       map['expires_on'] = Variable<String>(expiresOn.value);
+    }
+    if (nextOn.present) {
+      map['next_on'] = Variable<String>(nextOn.value);
     }
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
@@ -4020,6 +4069,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
           ..write('gymId: $gymId, ')
           ..write('trainer: $trainer, ')
           ..write('expiresOn: $expiresOn, ')
+          ..write('nextOn: $nextOn, ')
           ..write('notes: $notes, ')
           ..write('sortOrder: $sortOrder, ')
           ..write('archivedAt: $archivedAt, ')
@@ -10401,10 +10451,11 @@ class $$GymsTableTableManager
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (equipmentRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           Gym,
                           $GymsTable,
-                          EquipmentItem
+                          EquipmentItem,
+                          $EquipmentTable
                         >(
                           currentTable: table,
                           referencedTable: $$GymsTableReferences
@@ -10414,43 +10465,48 @@ class $$GymsTableTableManager
                             table,
                             p0,
                           ).equipmentRefs,
-                          referencedItemsForCurrentItem: (
-                            item,
-                            referencedItems,
-                          ) => referencedItems.where((e) => e.gymId == item.id),
+                          currentColumn: 'id',
+                          referencedColumn: 'gym_id',
                           typedResults: items,
                         ),
                       if (stationsRefs)
-                        await $_getPrefetchedData<Gym, $GymsTable, Station>(
+                        await $_getPrefetchedDataByColumns<
+                          Gym,
+                          $GymsTable,
+                          Station,
+                          $StationsTable
+                        >(
                           currentTable: table,
                           referencedTable: $$GymsTableReferences
                               ._stationsRefsTable(db),
                           managerFromTypedResult: (p0) =>
                               $$GymsTableReferences(db, table, p0).stationsRefs,
-                          referencedItemsForCurrentItem: (
-                            item,
-                            referencedItems,
-                          ) => referencedItems.where((e) => e.gymId == item.id),
+                          currentColumn: 'id',
+                          referencedColumn: 'gym_id',
                           typedResults: items,
                         ),
                       if (routinesRefs)
-                        await $_getPrefetchedData<Gym, $GymsTable, Routine>(
+                        await $_getPrefetchedDataByColumns<
+                          Gym,
+                          $GymsTable,
+                          Routine,
+                          $RoutinesTable
+                        >(
                           currentTable: table,
                           referencedTable: $$GymsTableReferences
                               ._routinesRefsTable(db),
                           managerFromTypedResult: (p0) =>
                               $$GymsTableReferences(db, table, p0).routinesRefs,
-                          referencedItemsForCurrentItem: (
-                            item,
-                            referencedItems,
-                          ) => referencedItems.where((e) => e.gymId == item.id),
+                          currentColumn: 'id',
+                          referencedColumn: 'gym_id',
                           typedResults: items,
                         ),
                       if (workoutSessionsRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           Gym,
                           $GymsTable,
-                          WorkoutSession
+                          WorkoutSession,
+                          $WorkoutSessionsTable
                         >(
                           currentTable: table,
                           referencedTable: $$GymsTableReferences
@@ -10460,10 +10516,8 @@ class $$GymsTableTableManager
                             table,
                             p0,
                           ).workoutSessionsRefs,
-                          referencedItemsForCurrentItem: (
-                            item,
-                            referencedItems,
-                          ) => referencedItems.where((e) => e.gymId == item.id),
+                          currentColumn: 'id',
+                          referencedColumn: 'gym_id',
                           typedResults: items,
                         ),
                     ];
@@ -11139,10 +11193,11 @@ class $$EquipmentTableTableManager
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (stationsRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           EquipmentItem,
                           $EquipmentTable,
-                          Station
+                          Station,
+                          $StationsTable
                         >(
                           currentTable: table,
                           referencedTable: $$EquipmentTableReferences
@@ -11153,17 +11208,16 @@ class $$EquipmentTableTableManager
                                 table,
                                 p0,
                               ).stationsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.equipmentId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'equipment_id',
                           typedResults: items,
                         ),
                       if (routineExercisesRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           EquipmentItem,
                           $EquipmentTable,
-                          RoutineExercise
+                          RoutineExercise,
+                          $RoutineExercisesTable
                         >(
                           currentTable: table,
                           referencedTable: $$EquipmentTableReferences
@@ -11174,10 +11228,8 @@ class $$EquipmentTableTableManager
                                 table,
                                 p0,
                               ).routineExercisesRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.preferredEquipmentId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'preferred_equipment_id',
                           typedResults: items,
                         ),
                     ];
@@ -11786,10 +11838,11 @@ class $$ExercisesTableTableManager
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (stationsRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           Exercise,
                           $ExercisesTable,
-                          Station
+                          Station,
+                          $StationsTable
                         >(
                           currentTable: table,
                           referencedTable: $$ExercisesTableReferences
@@ -11800,17 +11853,16 @@ class $$ExercisesTableTableManager
                                 table,
                                 p0,
                               ).stationsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.exerciseId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'exercise_id',
                           typedResults: items,
                         ),
                       if (routineExercisesRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           Exercise,
                           $ExercisesTable,
-                          RoutineExercise
+                          RoutineExercise,
+                          $RoutineExercisesTable
                         >(
                           currentTable: table,
                           referencedTable: $$ExercisesTableReferences
@@ -11821,17 +11873,16 @@ class $$ExercisesTableTableManager
                                 table,
                                 p0,
                               ).routineExercisesRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.exerciseId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'exercise_id',
                           typedResults: items,
                         ),
                       if (sessionExercisesRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           Exercise,
                           $ExercisesTable,
-                          SessionExercise
+                          SessionExercise,
+                          $SessionExercisesTable
                         >(
                           currentTable: table,
                           referencedTable: $$ExercisesTableReferences
@@ -11842,10 +11893,8 @@ class $$ExercisesTableTableManager
                                 table,
                                 p0,
                               ).sessionExercisesRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.exerciseId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'exercise_id',
                           typedResults: items,
                         ),
                     ];
@@ -12571,10 +12620,11 @@ class $$StationsTableTableManager
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (stationSettingsRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           Station,
                           $StationsTable,
-                          StationSetting
+                          StationSetting,
+                          $StationSettingsTable
                         >(
                           currentTable: table,
                           referencedTable: $$StationsTableReferences
@@ -12585,17 +12635,16 @@ class $$StationsTableTableManager
                                 table,
                                 p0,
                               ).stationSettingsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.stationId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'station_id',
                           typedResults: items,
                         ),
                       if (sessionExercisesRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           Station,
                           $StationsTable,
-                          SessionExercise
+                          SessionExercise,
+                          $SessionExercisesTable
                         >(
                           currentTable: table,
                           referencedTable: $$StationsTableReferences
@@ -12606,10 +12655,8 @@ class $$StationsTableTableManager
                                 table,
                                 p0,
                               ).sessionExercisesRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.stationId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'station_id',
                           typedResults: items,
                         ),
                     ];
@@ -13161,10 +13208,11 @@ class $$StationSettingsTableTableManager
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (stationSettingChangesRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           StationSetting,
                           $StationSettingsTable,
-                          StationSettingChange
+                          StationSettingChange,
+                          $StationSettingChangesTable
                         >(
                           currentTable: table,
                           referencedTable: $$StationSettingsTableReferences
@@ -13175,10 +13223,8 @@ class $$StationSettingsTableTableManager
                                 table,
                                 p0,
                               ).stationSettingChangesRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.settingId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'setting_id',
                           typedResults: items,
                         ),
                     ];
@@ -13210,6 +13256,7 @@ typedef $$RoutinesTableCreateCompanionBuilder = RoutinesCompanion Function({
   Value<String?> gymId,
   Value<String?> trainer,
   Value<String?> expiresOn,
+  Value<String?> nextOn,
   Value<String?> notes,
   Value<int> sortOrder,
   Value<DateTime?> archivedAt,
@@ -13224,6 +13271,7 @@ typedef $$RoutinesTableUpdateCompanionBuilder = RoutinesCompanion Function({
   Value<String?> gymId,
   Value<String?> trainer,
   Value<String?> expiresOn,
+  Value<String?> nextOn,
   Value<String?> notes,
   Value<int> sortOrder,
   Value<DateTime?> archivedAt,
@@ -13325,6 +13373,11 @@ class $$RoutinesTableFilterComposer
 
   ColumnFilters<String> get expiresOn => $composableBuilder(
     column: $table.expiresOn,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nextOn => $composableBuilder(
+    column: $table.nextOn,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -13461,6 +13514,11 @@ class $$RoutinesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get nextOn => $composableBuilder(
+    column: $table.nextOn,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get notes => $composableBuilder(
     column: $table.notes,
     builder: (column) => ColumnOrderings(column),
@@ -13533,6 +13591,9 @@ class $$RoutinesTableAnnotationComposer
 
   GeneratedColumn<String> get expiresOn =>
       $composableBuilder(column: $table.expiresOn, builder: (column) => column);
+
+  GeneratedColumn<String> get nextOn =>
+      $composableBuilder(column: $table.nextOn, builder: (column) => column);
 
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
@@ -13663,6 +13724,7 @@ class $$RoutinesTableTableManager
                 Value<String?> gymId = const Value.absent(),
                 Value<String?> trainer = const Value.absent(),
                 Value<String?> expiresOn = const Value.absent(),
+                Value<String?> nextOn = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
                 Value<int> sortOrder = const Value.absent(),
                 Value<DateTime?> archivedAt = const Value.absent(),
@@ -13676,6 +13738,7 @@ class $$RoutinesTableTableManager
                 gymId: gymId,
                 trainer: trainer,
                 expiresOn: expiresOn,
+                nextOn: nextOn,
                 notes: notes,
                 sortOrder: sortOrder,
                 archivedAt: archivedAt,
@@ -13691,6 +13754,7 @@ class $$RoutinesTableTableManager
                 Value<String?> gymId = const Value.absent(),
                 Value<String?> trainer = const Value.absent(),
                 Value<String?> expiresOn = const Value.absent(),
+                Value<String?> nextOn = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
                 Value<int> sortOrder = const Value.absent(),
                 Value<DateTime?> archivedAt = const Value.absent(),
@@ -13704,6 +13768,7 @@ class $$RoutinesTableTableManager
                 gymId: gymId,
                 trainer: trainer,
                 expiresOn: expiresOn,
+                nextOn: nextOn,
                 notes: notes,
                 sortOrder: sortOrder,
                 archivedAt: archivedAt,
@@ -13764,10 +13829,11 @@ class $$RoutinesTableTableManager
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (workoutSessionsRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           Routine,
                           $RoutinesTable,
-                          WorkoutSession
+                          WorkoutSession,
+                          $WorkoutSessionsTable
                         >(
                           currentTable: table,
                           referencedTable: $$RoutinesTableReferences
@@ -13778,17 +13844,16 @@ class $$RoutinesTableTableManager
                                 table,
                                 p0,
                               ).workoutSessionsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.routineId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'routine_id',
                           typedResults: items,
                         ),
                       if (routineExercisesRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           Routine,
                           $RoutinesTable,
-                          RoutineExercise
+                          RoutineExercise,
+                          $RoutineExercisesTable
                         >(
                           currentTable: table,
                           referencedTable: $$RoutinesTableReferences
@@ -13799,10 +13864,8 @@ class $$RoutinesTableTableManager
                                 table,
                                 p0,
                               ).routineExercisesRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.routineId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'routine_id',
                           typedResults: items,
                         ),
                     ];
@@ -14494,10 +14557,11 @@ class $$WorkoutSessionsTableTableManager
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (stationSettingChangesRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           WorkoutSession,
                           $WorkoutSessionsTable,
-                          StationSettingChange
+                          StationSettingChange,
+                          $StationSettingChangesTable
                         >(
                           currentTable: table,
                           referencedTable: $$WorkoutSessionsTableReferences
@@ -14508,17 +14572,16 @@ class $$WorkoutSessionsTableTableManager
                                 table,
                                 p0,
                               ).stationSettingChangesRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.sessionId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'session_id',
                           typedResults: items,
                         ),
                       if (sessionExercisesRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           WorkoutSession,
                           $WorkoutSessionsTable,
-                          SessionExercise
+                          SessionExercise,
+                          $SessionExercisesTable
                         >(
                           currentTable: table,
                           referencedTable: $$WorkoutSessionsTableReferences
@@ -14529,10 +14592,8 @@ class $$WorkoutSessionsTableTableManager
                                 table,
                                 p0,
                               ).sessionExercisesRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.sessionId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'session_id',
                           typedResults: items,
                         ),
                     ];
@@ -15776,10 +15837,11 @@ class $$RoutineExercisesTableTableManager
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (sessionExercisesRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           RoutineExercise,
                           $RoutineExercisesTable,
-                          SessionExercise
+                          SessionExercise,
+                          $SessionExercisesTable
                         >(
                           currentTable: table,
                           referencedTable: $$RoutineExercisesTableReferences
@@ -15790,10 +15852,8 @@ class $$RoutineExercisesTableTableManager
                                 table,
                                 p0,
                               ).sessionExercisesRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.routineExerciseId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'routine_exercise_id',
                           typedResults: items,
                         ),
                     ];
@@ -16738,10 +16798,11 @@ class $$SessionExercisesTableTableManager
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (workoutSetsRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           SessionExercise,
                           $SessionExercisesTable,
-                          WorkoutSet
+                          WorkoutSet,
+                          $WorkoutSetsTable
                         >(
                           currentTable: table,
                           referencedTable: $$SessionExercisesTableReferences
@@ -16752,10 +16813,8 @@ class $$SessionExercisesTableTableManager
                                 table,
                                 p0,
                               ).workoutSetsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.sessionExerciseId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'session_exercise_id',
                           typedResults: items,
                         ),
                     ];
@@ -17611,10 +17670,11 @@ class $$BodyCheckinsTableTableManager
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (bodyValuesRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           BodyCheckin,
                           $BodyCheckinsTable,
-                          BodyValue
+                          BodyValue,
+                          $BodyValuesTable
                         >(
                           currentTable: table,
                           referencedTable: $$BodyCheckinsTableReferences
@@ -17625,17 +17685,16 @@ class $$BodyCheckinsTableTableManager
                                 table,
                                 p0,
                               ).bodyValuesRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.checkinId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'checkin_id',
                           typedResults: items,
                         ),
                       if (bodyPhotosRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           BodyCheckin,
                           $BodyCheckinsTable,
-                          BodyPhoto
+                          BodyPhoto,
+                          $BodyPhotosTable
                         >(
                           currentTable: table,
                           referencedTable: $$BodyCheckinsTableReferences
@@ -17646,10 +17705,8 @@ class $$BodyCheckinsTableTableManager
                                 table,
                                 p0,
                               ).bodyPhotosRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.checkinId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'checkin_id',
                           typedResults: items,
                         ),
                     ];

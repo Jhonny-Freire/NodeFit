@@ -8,6 +8,7 @@ import '../../../app/theme/app_theme.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/prefs/prefs_repository.dart';
 import '../../../core/domain/superset.dart';
+import '../../../core/domain/workout_dates.dart';
 import '../../../core/widgets/common.dart';
 import '../../catalog/presentation/exercise_picker_sheet.dart';
 import '../../gyms/data/gym_repository.dart';
@@ -253,33 +254,29 @@ class _Editor extends ConsumerWidget {
   }
 }
 
-class _InfoCard extends StatelessWidget {
+class _InfoCard extends ConsumerWidget {
   const _InfoCard({required this.routine});
   final Routine routine;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final expiry = expiryInfo(routine.expiresOn);
+    // Datas do treino: o último feito (do histórico) e o próximo planejado.
+    final lastDone = ref.watch(routineLastDoneProvider(routine.id)).value;
+    final next = nextWorkoutInfo(routine.nextOn);
+    final warn = expiry?.warn == true || next?.overdue == true;
     final lines = [
       if (routine.trainer != null) 'Professor: ${routine.trainer}',
+      lastWorkoutText(lastDone) ?? 'Ainda não feita',
+      next?.text ?? 'Próximo: sem data (toque para marcar)',
       ?expiry?.text,
       ?routine.notes,
     ];
-    if (lines.isEmpty) {
-      return Card(
-        child: ListTile(
-          leading: const Icon(Icons.info_outline),
-          title: const Text('Sem professor nem vencimento'),
-          subtitle: const Text('Toque para anotar (opcional)'),
-          onTap: () => showRoutineInfoSheet(context, routine: routine),
-        ),
-      );
-    }
     return Card(
       child: ListTile(
         leading: Icon(
-          expiry?.warn == true ? Icons.event_busy : Icons.info_outline,
-          color: expiry?.warn == true ? context.semantic.attention : null,
+          warn ? Icons.event_busy : Icons.event_note_outlined,
+          color: warn ? context.semantic.attention : null,
         ),
         title: Text(lines.first),
         subtitle: lines.length > 1 ? Text(lines.skip(1).join('\n')) : null,
@@ -335,6 +332,7 @@ class _InfoSheetState extends ConsumerState<_InfoSheet> {
   );
   late final _notes = TextEditingController(text: widget.routine.notes ?? '');
   late String? _expires = widget.routine.expiresOn;
+  late String? _nextOn = widget.routine.nextOn;
 
   @override
   void dispose() {
@@ -360,6 +358,22 @@ class _InfoSheetState extends ConsumerState<_InfoSheet> {
     }
   }
 
+  /// Data do próximo treino: aceita passado (para registrar um que já
+  /// passou) e futuro.
+  Future<void> _pickNextDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      helpText: 'Próximo treino',
+      initialDate: DateTime.tryParse(_nextOn ?? '') ?? now,
+      firstDate: DateTime(now.year - 1),
+      lastDate: DateTime(now.year + 1, 12, 31),
+    );
+    if (picked != null) {
+      setState(() => _nextOn = DateFormat('yyyy-MM-dd').format(picked));
+    }
+  }
+
   Future<void> _save() async {
     if (_name.text.trim().isEmpty) return;
     await ref
@@ -370,6 +384,7 @@ class _InfoSheetState extends ConsumerState<_InfoSheet> {
           label: _label.text,
           trainer: _trainer.text,
           expiresOn: _expires,
+          nextOn: _nextOn,
           notes: _notes.text,
         );
     if (mounted) Navigator.of(context).pop();
@@ -439,6 +454,22 @@ class _InfoSheetState extends ConsumerState<_InfoSheet> {
                     onPressed: () => setState(() => _expires = null),
                   ),
             onTap: _pickDate,
+          ),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.event_available_outlined),
+            title: const Text('Próximo treino'),
+            subtitle: Text(
+              nextWorkoutInfo(_nextOn)?.text ?? 'Sem data marcada',
+            ),
+            trailing: _nextOn == null
+                ? const Icon(Icons.chevron_right)
+                : IconButton(
+                    tooltip: 'Tirar data do próximo treino',
+                    icon: const Icon(Icons.close),
+                    onPressed: () => setState(() => _nextOn = null),
+                  ),
+            onTap: _pickNextDate,
           ),
           TextField(
             controller: _notes,

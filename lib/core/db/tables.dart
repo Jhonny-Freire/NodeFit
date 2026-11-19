@@ -162,6 +162,10 @@ class Routines extends Table {
 
   /// Vencimento da ficha (AAAA-MM-DD).
   TextColumn get expiresOn => text().nullable()();
+
+  /// Data planejada do próximo treino com esta ficha (AAAA-MM-DD).
+  /// Pode estar no futuro (vai acontecer) ou no passado (já passou).
+  TextColumn get nextOn => text().nullable()();
   TextColumn get notes => text().nullable()();
   IntColumn get sortOrder => integer().withDefault(const Constant(0))();
   DateTimeColumn get archivedAt => dateTime().nullable()();
